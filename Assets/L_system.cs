@@ -10,6 +10,16 @@ public class L_system
         ruleSet.Add(rulechar, newstring);
     }
 
+    public void ClearRuleset()
+    {
+        ruleSet.Clear();
+    }
+
+    public bool CheckIfRulesExist(char replace)
+    {
+        return !ruleSet.ContainsKey(replace);
+    }
+
     public string ApplyAxioms(string system)
     {
         string applied = "";

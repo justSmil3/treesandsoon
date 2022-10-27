@@ -15,8 +15,26 @@ public struct LinkedTreeSystemNodeLink
     public LinkedTreeSystemNode prev;
 }
 
+[System.Serializable]
+public struct rule
+{
+    public char replace;
+    public string newrule;
+}
+
     public class GenerateTree : MonoBehaviour
 {
+
+    public int iterations = 3;
+    public string startString = "+TT+F";
+    public List<rule> ruleset = new List<rule>();
+
+    private int iterationsPrev = 3;
+    private string startStringPrev = "+TT+F";
+    private List<rule> rulesetPrev = new List<rule>();
+
+    private L_system lsys;
+
 
     List<LinkedTreeSystemNodeLink> treelink = new List<LinkedTreeSystemNodeLink>();
     Stack<LinkedTreeSystemNode> positionstack = new Stack<LinkedTreeSystemNode>();
@@ -33,15 +51,69 @@ public struct LinkedTreeSystemNodeLink
     }
     private void Awake()
     {
-        string startString = "+TT+F";
+        rulesetPrev.Clear();
+        rulesetPrev.AddRange(ruleset);
+        startStringPrev = startString;
+        iterationsPrev = iterations;
+
         //string startString = "+TT+R";
-        L_system lsys = new L_system();
+        lsys = new L_system();
+        //lsys.AddRule('F', "F[Fz[zFZXFZYF]Z[ZFxzFyzF]C+]");
         //lsys.AddRule('F', "TF[[XF][F]xF]");
-        lsys.AddRule('F', "F[Fz[zFZXFZYF]Z[ZFxzFyzF]C+]");
+        lsys.ClearRuleset();
+        foreach (rule r in ruleset)
+        {
+            //lsys.AddRule('F', "F[Fz[zFZXFZYF]Z[ZFxzFyzF]C+]");
+            lsys.AddRule(r.replace, r.newrule);
+        }
         //lsys.AddRule('R', "FFF[FXYZ[FxRxF[zFRzXFC]R[ZFZyFC]]yFRyF]");
-        string res = lsys.ApplyAxioms(startString, 5);
-        Debug.Log(res);
+        string res = lsys.ApplyAxioms(startString, iterations);
         BuildTreeNodeSystem(res);
+    }
+
+    private void FixedUpdate()
+    {
+        if(iterations != iterationsPrev || startString != startStringPrev)
+        {
+            startStringPrev = startString;
+            iterationsPrev = iterations;
+            string res = lsys.ApplyAxioms(startString, iterations);
+            BuildTreeNodeSystem(res);
+        }
+
+        if(bCeckListEquivalence(ruleset, rulesetPrev))
+        {
+            lsys.ClearRuleset();
+            foreach (rule r in ruleset)
+            {
+                //lsys.AddRule('F', "F[Fz[zFZXFZYF]Z[ZFxzFyzF]C+]");
+                if(lsys.CheckIfRulesExist('F'))
+                lsys.AddRule(r.replace, r.newrule);
+                else continue;
+            
+                string res = lsys.ApplyAxioms(startString, iterations);
+                BuildTreeNodeSystem(res);
+            }
+        }
+
+
+    }
+
+    bool bCeckListEquivalence(List<rule> first, List<rule> second)
+    {
+        bool areEqual = false;
+        for(int i = 0; i < first.Count; i++)
+        {
+            if (second.Exists(r2 => first[i].replace == r2.replace && first[i].newrule == r2.newrule))
+            {
+                rule r2 = second.Find(r2 => first[i].replace == r2.replace && first[i].newrule == r2.newrule);
+                second.Remove(r2);
+            }
+            else areEqual = true;
+        }
+        rulesetPrev.Clear();
+        rulesetPrev.AddRange(ruleset);
+        return areEqual;
     }
 
     void BuildTreeNodeSystem(string tree)
@@ -106,6 +178,7 @@ public struct LinkedTreeSystemNodeLink
                     break;
                 case ']':
                     // get the first element i dont really know where to save it 
+                    if(positionstack.Count > 0)
                     currentState = positionstack.Pop();
                     startDir = currentState.dir;
                     pos = currentState.pos; // TODO fix object referencing
