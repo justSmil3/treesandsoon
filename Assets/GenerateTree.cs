@@ -67,8 +67,13 @@ public struct rule
             lsys.AddRule(r.replace, r.newrule);
         }
         //lsys.AddRule('R', "FFF[FXYZ[FxRxF[zFRzXFC]R[ZFZyFC]]yFRyF]");
+
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         string res = lsys.ApplyAxioms(startString, iterations);
+        Debug.LogWarning(watch.ElapsedMilliseconds);
         BuildTreeNodeSystem(res);
+        watch.Stop();
+        Debug.LogWarning(watch.ElapsedMilliseconds);
     }
 
     private void FixedUpdate()
