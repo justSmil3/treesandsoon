@@ -56,6 +56,10 @@ public class SplineTreeInspector : Editor
 			spline.AddCurve(0);
 			EditorUtility.SetDirty(spline);
 		}
+		if (GUILayout.Button("Convert"))
+		{
+			spline.ConvertToLSystem();
+		}
 	}
 
 	private void DrawSelectedPointInspector(int branchIndex, int bsi)

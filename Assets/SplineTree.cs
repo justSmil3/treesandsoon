@@ -243,5 +243,13 @@ public class SplineTree : MonoBehaviour
 		}
 		branch.GetSplineNode(enforcedIndex, branchStartIdx).point = middle + enforcedTangent;
 	}
+
+	public void ConvertToLSystem()
+    {
+		// string result = "";
+		// tmp
+		Reset();
+		Bez2Lsys.Convert(branches, out _);
+    }
 }
 
