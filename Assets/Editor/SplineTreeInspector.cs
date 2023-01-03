@@ -41,14 +41,14 @@ public class SplineTreeInspector : Editor
 	{
 		spline = target as SplineTree;
 		EditorGUI.BeginChangeCheck();
-		for (int i = 0; i < spline.branches.Count; i++)
-		{
-			if (selectedIndex >= 0 && selectedIndex < spline.branches[i].GetBranchSize(spline.branchStarter[i])) // controllpointcount
-				if (selectedBranch >= 0 && selectedBranch < spline.branches.Count) // controllpointcount
-				{
-					DrawSelectedPointInspector(i, spline.branchStarter[i]);
-				}
-		}
+		//for (int i = 0; i < spline.branches.Count; i++)
+		//{
+		//	if (selectedIndex >= 0 && selectedIndex < spline.branches[i].GetBranchSize(spline.branchStarter[i])) // controllpointcount
+		//		if (selectedBranch >= 0 && selectedBranch < spline.branches.Count) // controllpointcount
+		//		{
+		//			DrawSelectedPointInspector(i, spline.branchStarter[i]);
+		//		}
+		//}
 		// TODO make an int filed to spcify where to add to
 		if (GUILayout.Button("Add Curve"))
 		{
@@ -60,7 +60,19 @@ public class SplineTreeInspector : Editor
 		{
 			spline.ConvertToLSystem();
 		}
-	}
+		if (GUILayout.Button("Convert back"))
+		{
+			spline.ConvertToBezierTree();
+		}
+		if (GUILayout.Button("Reset"))
+		{
+			spline.Reset();
+		}
+        if (GUILayout.Button("Debug"))
+        {
+			spline.CalculateVigor();
+        }
+    }
 
 	private void DrawSelectedPointInspector(int branchIndex, int bsi)
 	{

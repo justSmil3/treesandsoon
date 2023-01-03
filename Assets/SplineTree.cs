@@ -10,9 +10,26 @@ public class SplineTree : MonoBehaviour
 	public List<int> branchStarter = new List<int>();
 	[SerializeField]
 	public List<BezierControlPointMode[]> modes = new List<BezierControlPointMode[]>();
+	private string Lsys;
+	public float vigor = 100f;
 
+    private void OnDrawGizmos()
+    {
+        for (int i = 0; i < branches.Count; i++)
+        {
+            SplineNode current = branches[i];
+            Gizmos.DrawSphere(current.point, current.GetVigor() / 1000);
+            current = current.GetNextNode(Math.Min(1, i));
+            while (current.GetNumberOfConnections() > 0)
+            {
+                Gizmos.DrawSphere(current.point, current.GetVigor() / 1000);
+                current = current.GetNextNode(0);
+            }
+            Gizmos.DrawSphere(current.point, current.GetVigor() / 1000);
+        }
+    }
 
-	public Vector3 GetControlPoint(int branchIndex, int startIndex, int index)
+    public Vector3 GetControlPoint(int branchIndex, int startIndex, int index)
 	{
 		return branches[branchIndex].GetSplineNode(index, startIndex).point;
     }
@@ -62,7 +79,9 @@ public class SplineTree : MonoBehaviour
 
 	public BezierControlPointMode GetControlPointMode(int branchIndex, int index)
 	{
-		return modes[branchIndex][(index + 1) / 3];
+		BezierControlPointMode[] tmp = modes[branchIndex];
+		return tmp[(index + 1) / 3];
+		// the error lies in the order difference of the list in lsys and bez ... 
 	}
 
 	public void SetControlPointMode(int branchIndex, int index, BezierControlPointMode mode)
@@ -108,17 +127,19 @@ public class SplineTree : MonoBehaviour
 		float pointPosChange = .05f;
 		Vector3 velo = GetDirection(branchIndex, idx, t);
 		Vector3 p = GetPoint(branchIndex, idx, t);
-		SplineNode[] stemp = { new SplineNode(),
-							   new SplineNode(),
-							   new SplineNode()};
-		stemp[0].point = p - (pointPosChange * velo);
-		stemp[1].point = p;
-		stemp[2].point = p + (pointPosChange * velo);
 
 		SplineNode branch = branches[branchIndex]; 
 		int branchStartIdx = branchStarter[branchIndex];
 		SplineNode tmp = branch.GetSplineNode(insertIdx, branchStartIdx);
 		SplineNode preNode = branch.GetSplineNode(insertIdx - 1, branchStartIdx);
+
+		SplineNode[] stemp = { new SplineNode(preNode.branchIdx),
+							   new SplineNode(preNode.branchIdx),
+							   new SplineNode(preNode.branchIdx)};
+		stemp[0].point = p - (pointPosChange * velo);
+		stemp[1].point = p;
+		stemp[2].point = p + (pointPosChange * velo);
+
 		preNode.ClearNext();
 		preNode.SetNext(stemp);
 		stemp[2].SetNext(tmp);
@@ -141,6 +162,7 @@ public class SplineTree : MonoBehaviour
 		SplineNode branch = branches[branchIndex];
 		int connectionPointIndex = InsertCurve(branchIndex, idx, t);
 		SplineNode connectionNode = branch.GetSplineNode(connectionPointIndex, branchStarter[branchIndex]);
+
 		Vector3 p = Vector3.zero;
 		Plane plane = new Plane(UnityEditor.SceneView.lastActiveSceneView.camera.transform.forward, connectionNode.point);
 		float dist2obj;
@@ -151,20 +173,25 @@ public class SplineTree : MonoBehaviour
 
 		SplineNode[] stemp = new SplineNode[]
 		{
-			new SplineNode(connectionNode.point + p * 0.1f),
-            new SplineNode(connectionNode.point + p * 0.9f),
-            new SplineNode(connectionNode.point + p)
+			new SplineNode(connectionNode.point + p * 0.1f, connectionNode.branchIdx += 1),
+            new SplineNode(connectionNode.point + p * 0.9f, connectionNode.branchIdx += 1),
+            new SplineNode(connectionNode.point + p, connectionNode.branchIdx += 1)
         };
-        branchStarter.Add(connectionNode.GetNumberOfConnections());
-        connectionNode.SetNext(stemp);
-        branches.Add(connectionNode);
+		int numberAhead = connectionNode.GetNumbersOfBranchesAhead();
+		int insertIndex = branches.Count - numberAhead;
 
-		modes.Add(new BezierControlPointMode[] {
-			BezierControlPointMode.Free,
-			BezierControlPointMode.Free
-		});
-		EnforceMode(branches.Count - 1, 0);
-	}
+        branchStarter.Insert(insertIndex, connectionNode.GetNumberOfConnections());
+        connectionNode.SetNext(stemp);
+        branches.Insert(insertIndex, connectionNode);
+
+        modes.Insert(insertIndex, new BezierControlPointMode[] {
+            BezierControlPointMode.Free,
+            BezierControlPointMode.Free
+        });
+
+
+        EnforceMode(branches.Count - 1, 0);
+    }
 
 	public void AddCurve(int branchIndex)
 	{
@@ -246,10 +273,24 @@ public class SplineTree : MonoBehaviour
 
 	public void ConvertToLSystem()
     {
-		// string result = "";
-		// tmp
-		Reset();
-		Bez2Lsys.Convert(branches, out _);
+		string result = "";
+		Bez2Lsys.Convert(branches, out result);
+		Lsys = result;
+		Lsys = Bez2Lsys.ConvertBranch(branches[0]);
+		Debug.Log(result.Length + " : " + Lsys.Length + "__: " + Lsys);
+    }
+
+	public void ConvertToBezierTree()
+	{
+		SplineTreeUnit tmp = Lsys2Bez.Convert(Lsys);
+		branches = tmp.branches;
+		branchStarter = tmp.branchStarter;
+		modes = tmp.modes;
+	}
+
+	public void CalculateVigor()
+    {
+		branches[0].RecalculateVigor(vigor);
     }
 }
 
