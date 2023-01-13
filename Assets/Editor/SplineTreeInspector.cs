@@ -4,6 +4,11 @@ using UnityEngine;
 [CustomEditor(typeof(SplineTree))]
 public class SplineTreeInspector : Editor
 {
+	// slider values for the amount of procedural influence 
+	float randomnessSliderValue = 10;
+	float minRandomnessSliderValue = 0;
+	float maxRandomnessSliderValue = 100;
+
 	float threshhold = 10f;
 	private float selectionthreshhold = 2f;
 	private float selectionThreshhold = 250.0f;
@@ -72,7 +77,26 @@ public class SplineTreeInspector : Editor
         {
 			spline.CalculateVigor();
         }
-    }
+
+		GUILayout.Space(10);
+		if (GUILayout.Button("Run LSystem")){
+			spline.RunLSystem(randomnessSliderValue);
+        }
+		// randomness slider with on change check
+		float tmpRandomnessSliderValue =
+			GUILayout.HorizontalSlider(randomnessSliderValue,
+									   minRandomnessSliderValue,
+									   maxRandomnessSliderValue);
+		if(tmpRandomnessSliderValue != randomnessSliderValue)
+        {
+			randomnessSliderValue = tmpRandomnessSliderValue;
+			Debug.Log(randomnessSliderValue);
+        }
+
+		GUILayout.Space(10);
+
+	}
+
 
 	private void DrawSelectedPointInspector(int branchIndex, int bsi)
 	{

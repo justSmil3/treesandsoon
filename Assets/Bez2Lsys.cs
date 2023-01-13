@@ -6,7 +6,7 @@ public static class Bez2Lsys
 {
     // old name = ConvertSplineTreeToLSystemString
 
-    private static string convertSingleBranch(SplineNode startNode, SplineNode parent = null, int currentbranch = 0, bool bIsRoot = false)
+    private static string convertSingleBranch(SplineNode startNode, ref float mxy, SplineNode parent = null, int currentbranch = 0, bool bIsRoot = false)
     {
         string result = "";
         // starting node
@@ -25,6 +25,11 @@ public static class Bez2Lsys
             float angleZ = Mathf.Rad2Deg * Mathf.Acos(Vector3.Dot(Vector3.up, new Vector3(direction.x, direction.y, 0f)));
             if (direction.x < 0)
                 angleZ = 360 - angleZ;
+
+            // assign max value;
+            if (Mathf.Abs(angleX) > mxy) mxy = Mathf.Abs(angleX);
+            if (Mathf.Abs(angleZ) > mxy) mxy = Mathf.Abs(angleZ);
+            if (connection.magnitude > mxy) mxy = connection.magnitude;
 
             result += "Ax" + angleX.ToString() + "z" + angleZ.ToString();
 
@@ -46,25 +51,29 @@ public static class Bez2Lsys
         SplineNode nextNode = startNode.GetNextNode(currentbranch);
         if (nextNode != null)
         {
-            result += convertSingleBranch(nextNode, startNode);
+            result += convertSingleBranch(nextNode, ref mxy, startNode);
         }
         else result += ":]";
         return result;
     }
 
-    public static bool Convert(List<SplineNode> tree, out string result)
+    public static bool Convert(List<SplineNode> tree, out string result, out float mxy, bool broot = true)
     {
         result = "";
+        mxy = 0;
         if (tree == null || tree.Count == 0) return false;
 
-        result += convertSingleBranch(tree[0], null, 0, true);
+        if(broot)
+            result += convertSingleBranch(tree[0], ref mxy, null, 0, true);
+        else
+            result += convertSingleBranch(tree[0], ref mxy, null, 1);
 
         for (int i = 1; i < tree.Count; i++)
         {
             // TODO danger i dont know if the nodes can be in here multiple times but for now i am assuming they are not
             for (int j = 1; j < tree[i].GetNumberOfConnections(); j++)
             {
-                result += convertSingleBranch(tree[i], null, j);
+                result += convertSingleBranch(tree[i], ref mxy, null, j);
             }
         }
         return true;
@@ -111,6 +120,8 @@ public static class Bez2Lsys
         {
             result += ConvertBranch(root.GetNextNode(i), root, idx+1);
         }
+        Debug.Log("_________________________________________________________________________________");
+        root.LogAll();
         return result;
     }
 

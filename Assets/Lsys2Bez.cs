@@ -91,11 +91,11 @@ public static class Lsys2Bez
 		Stack<SplineNode> StackedNode = new Stack<SplineNode>();
 		Stack<int> idxStack = new Stack<int>();
 		Vector3 dir = Vector3.up;
-		Vector3 point = new Vector3(-2, 0, 0);
+		Vector3 point = new Vector3(0, 0, 0);
 		int idx = 0;
 
 		// format: ...;...Ax00z00L00:]
-		for (int i = 0; i < Lsys.Length - 1; i++)
+		for (int i = 0; i < Lsys.Length; i++)
 		{
 			char letter = Lsys[i];
 			switch (letter)
@@ -153,7 +153,9 @@ public static class Lsys2Bez
 					tree.modes[idx] = modeArray;
 					break;
 				case ']':
+					if(StackedNode.Count > 0)
 					prevNode = StackedNode.Pop();
+					if(idxStack.Count > 0)
 					idx = idxStack.Pop();
 					point = prevNode.point;
 					break;
@@ -161,7 +163,7 @@ public static class Lsys2Bez
 					break;
 			}
 		}
-
+		tree.branches[0].LogAll();
 		return tree;
 	}
 

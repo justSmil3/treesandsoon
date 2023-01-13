@@ -5,26 +5,12 @@ using System.Collections.Generic;
 
 public class SplineTree : MonoBehaviour
 {
-	// figure out if branchstarter really do need to exist
-	// the Nodelist
 	[SerializeField]
 	public List<SplineNode> branches = new List<SplineNode>();
 	public List<int> branchStarter = new List<int>();
-
-	// for the controll poitns, this however has to be adapted in the future
-	[SerializeField] 
+	[SerializeField]
 	public List<BezierControlPointMode[]> modes = new List<BezierControlPointMode[]>();
-
-	// The text representation of the single cluster indexes
 	private string Lsys;
-
-	// The translator that converts the char indexing into the operation of creating a cluster
-	private Translator translator = new Translator();
-
-	// The list of clusters in the tree, these are the objects the LSystem operates on 
-	private List<Cluster> clusters = new List<Cluster>();
-
-	// a variable for the handling of the mesh
 	public float vigor = 100f;
 	
 	// TODO check if other solution works if not go back to this temporary solution
@@ -82,13 +68,8 @@ public class SplineTree : MonoBehaviour
         {
 			branches[0].DeleteSplineTree();
         }
-		
-		// reinitiate the lists
 		branches = new List<SplineNode>();
 		branchStarter = new List<int>();
-		clusters = new List<Cluster>();
-		translator = new Translator();
-
 		SplineNode n0 = new SplineNode(new Vector3(0.0f, 0.0f, 0.0f));
 		SplineNode n1 = new SplineNode(new Vector3(0.0f, 0.1f, 0.0f));
 		SplineNode n2 = new SplineNode(new Vector3(0.0f, 0.9f, 0.0f));

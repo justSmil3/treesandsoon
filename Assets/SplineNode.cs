@@ -32,13 +32,13 @@ public class SplineNode
         branchIdx = bidx;
     }
 
-    public void LogAll(string prefix = "", int idx = 0)
+    public void LogAll(string prefix = "", int idx = 0, string postFix = " >> ")
     {
         string perfix = idx == 0 ? "__root__: " : "__" + idx.ToString() + "__: ";
-        Debug.Log(prefix + perfix + point);
+        Debug.Log(prefix + perfix + point + postFix);
         for (int i = 0; i < next.Count; i++)
         {
-            next[i].LogAll(prefix, idx + 1);
+            next[i].LogAll(prefix, idx + 1, postFix + " : " + i.ToString());
         }
     }
     public SplineNode GetNextNode(int idx = 0)
