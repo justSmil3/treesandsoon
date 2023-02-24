@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Translator
@@ -61,6 +62,20 @@ public class Translator
         return result;
     }
 
+    public char FindKey(string command)
+    {
+        char key = ' ';
+        if (dictionary.ContainsValue(command))
+        {
+            key = dictionary.FirstOrDefault(x => x.Value == command).Key;
+        }
+        else
+        {
+            AddTranslation(command, out key);
+        }
+        return key;
+    }
+
     public string Translate(string sentence)
     {
         // This does not contain an implimentation of commands as of now
@@ -68,6 +83,20 @@ public class Translator
         for(int i = 0; i < sentence.Length; i++)
         {
             result += FindTranslation(sentence[i]);
+        }
+        return result;
+    }
+
+    public string Incoporate(string _lsys) // Important: this step gets wrid of the ending ]
+    {
+        string[] commands = _lsys.Split(':');
+        string result = "";
+        for(int i = 0; i < commands.Length - 1; i++)
+        {
+            string currentCommand = commands[i];
+            currentCommand += ':';
+            char key = FindKey(currentCommand);
+            result += key;
         }
         return result;
     }

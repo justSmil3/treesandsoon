@@ -15,8 +15,15 @@ public class SplineTree : MonoBehaviour
 	[SerializeField] 
 	public List<BezierControlPointMode[]> modes = new List<BezierControlPointMode[]>();
 
-	// The text representation of the single cluster indexes
-	private string Lsys;
+
+
+	/// <summary>
+	/// the filds above are from the old version
+	/// </summary>
+	/// 
+
+	// The Set of rules currently is generalized over the entire set of branches
+	private L_system lSystem = new L_system();
 
 	// The translator that converts the char indexing into the operation of creating a cluster
 	private Translator translator = new Translator();
@@ -26,7 +33,7 @@ public class SplineTree : MonoBehaviour
 
 	// a variable for the handling of the mesh
 	public float vigor = 100f;
-	
+	private string Lsys = "";
 	// TODO check if other solution works if not go back to this temporary solution
 	// temporary solution to the rotation reset problem, acompanied with the R symbol in the Lsys string
 	// public Vector3 savedRotation;

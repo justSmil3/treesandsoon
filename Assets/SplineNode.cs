@@ -32,6 +32,29 @@ public class SplineNode
         branchIdx = bidx;
     }
 
+    public void scalePoint(List<SplineNode> terminators, Vector3 scaler)
+    {
+        if (terminators.Contains(this)) return;
+        point.x /= scaler.x;
+        point.y /= scaler.y;
+        point.z /= scaler.z;
+        for (int i = 0; i < next.Count; i++)
+        {
+            next[i].scalePoint(terminators, scaler);
+        }
+    }
+
+    public void CopyValues(SplineNode _node)
+    {
+        next = _node.next;
+        branchIdx = _node.branchIdx;
+        numberOfBranchesAhead = _node.numberOfBranchesAhead;
+        point = _node.point;
+        vigor = _node.vigor;
+        vigorCost = _node.vigorCost;
+    }
+
+
     public void LogAll(string prefix = "", int idx = 0, string postFix = " >> ")
     {
         string perfix = idx == 0 ? "__root__: " : "__" + idx.ToString() + "__: ";
@@ -99,8 +122,24 @@ public class SplineNode
         return next[0].GetLastSplineNode();
     }
 
+    public SplineNode GetLastSplineNode(int startIdx)
+    {
+        if (next.Count <= startIdx) return this;
+        return next[startIdx].GetLastSplineNode();
+    }
+
     public void DeleteSplineTree()
     {
+        for (int i = 0; i < next.Count; i++)
+        {
+            next[i].DeleteSplineTree();
+        }
+        next = new List<SplineNode>();
+    }
+
+    public void DeleteSplineTree(List<SplineNode> terminator)
+    {
+        if (terminator.Contains(this)) return;
         for (int i = 0; i < next.Count; i++)
         {
             next[i].DeleteSplineTree();
